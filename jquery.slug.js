@@ -4,6 +4,8 @@ jQuery Slug 1.0
 
 jQuery Slug is a powerful plugin that makes it easy to transform strings into slugs.
 
+ * Customization: convert all strings to lowercase and only allow dashes, lower case letters and numbers.
+
 */
 DEBUG = null;
 (function($) {
@@ -60,7 +62,9 @@ DEBUG = null;
         'Ĳ': 'IJ',
         'ĳ': 'ij',
         'Œ': 'OE',
-        'ƒ': 'f'
+        'ƒ': 'f',
+        '"': '',
+        "'": ''
     };
     
     /**
@@ -69,37 +73,50 @@ DEBUG = null;
     * credits: CakePHP
     */
     $.slug = function(string, replacement, map) {
-        
-        if($.type(replacement) == 'undefined') {
+
+        if($.type(replacement) === 'undefined') {
             replacement = '_';
-        } else if($.type(replacement) == 'object') {
+        } else if($.type(replacement) === 'object') {
             map = replacement;
             replacement = '_';
         }
-        
+
         transliteration['[^a-zA-Z0-9]'] = replacement;
-        
+
         if(!map) {
             map = {};
         }
-        
+
         map = $.extend({}, transliteration, map, {
             "\\s+": replacement
         });
-        
+
         var slug = string;
         $.each(map, function(index, value) {
             var re = new RegExp(index, "g");
             slug = slug.replace(re, value);
         });
-        
-        return slug;
-        
+
+        var lowercase = slug.toLowerCase();
+
+        // once the slug is generated, remove everything but
+        // dashes, lowercase letters and numbers
+        var patt1 =/[\-a-z0-9]+/g;
+        var patt2 =/[\-a-z0-9]+/;
+        var tmp = '';
+        var result = '';
+        var index = 0;
+
+        while (patt1.test(lowercase) == true) {
+          tmp = lowercase.slice(index,patt1.lastIndex);
+          index = patt1.lastIndex;
+          result += patt2.exec(tmp);
+        }
+        return result;
     };
-    
-    
+
     $.fn.slug = function(options) {
-        
+
         var settings = $.extend({}, {
             'target': null,
             'event': 'keyup',
@@ -107,29 +124,27 @@ DEBUG = null;
             'map': null,
             'callback': null
         }, options);
-        
+
         if($.type(options) == 'function') {
             settings['callback'] = options;
         }
-        
+
         this.each(function() {
             var $this = $(this);
             
             $this.bind(settings['event'] + ' jquery-slug-bind', function() {
                 var val = $this.val();
-                
+
                 slug = $.slug(val, settings['replacement'], settings['map']);
                 if(settings['target']) {
                     _setVal(settings['target'], slug);
                 }
-                
+
                 if(settings['callback']) {
                     settings['callback'].apply($this, [slug, val]);
                 }
             });
-            
             $this.trigger('jquery-slug-bind');
-            
         });
     }
     
@@ -141,5 +156,5 @@ DEBUG = null;
             $target.text(value);
         }
     }
-    
+
 })(jQuery);
