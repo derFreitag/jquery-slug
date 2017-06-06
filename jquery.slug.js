@@ -7,7 +7,6 @@ jQuery Slug is a powerful plugin that makes it easy to transform strings into sl
  * Customization: convert all strings to lowercase and only allow dashes, lower case letters and numbers.
 
 */
-DEBUG = null;
 (function($) {
     
     // Default map of accented and special characters to ASCII characters
